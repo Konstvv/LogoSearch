@@ -11,6 +11,7 @@ import numpy as np
 import pickle
 import progressbar
 from pymongo import MongoClient
+import logging
 
 # Take in base64 string and return a 3D RGB image (numpy array)
 def stringToRGB(base64_string):
@@ -19,7 +20,7 @@ def stringToRGB(base64_string):
     if len(im.shape) < 3:
         im = cv2.cvtColor(im, cv2.COLOR_GRAY2RGB)
     if len(im.shape) != 3:
-        raise Exception("Please use RGB (3 channels) or grayscale (1 channel) images.")
+        logging.error("Please use RGB (3 channels) or grayscale (1 channel) images.")
     return im
 
 
@@ -35,7 +36,7 @@ class Vectorize:
 
     def __init__(self, modelname):
         self.model = keras.models.load_model(modelname, compile=False)
-        print('Neural network has been initialized')
+        logging.info('Neural network has been initialized')
         self.vectors = []
         try:
             self.client = MongoClient('localhost', 27017)
@@ -45,12 +46,12 @@ class Vectorize:
             self.str_id = 'DocId'
             self.str_vector = 'ImgVector'
         except Exception as exc:
-            print(exc)
+            logging.error("An error occurred: {}".format(exc))
 
     @staticmethod
     def reshape_resize(img):
         if img is None:
-            raise Exception('No image.')
+            logging.error('No image was presented to the preprocessing function.')
         if img.shape[0] != img.shape[1]:
             if img.shape[0] > img.shape[1]:
                 bordersize = int((img.shape[0] - img.shape[1]) / 2)
@@ -85,10 +86,13 @@ class Vectorize:
         return self.model.predict(img).ravel()
 
     def all_files_to_vec(self):
+        logging.info("Rewriting vectors database.")
         self.delete_vecs()
+        logging.info("Rewriting vectors database: database emptied.")
         max_value = self.db.tm.count_documents({})
         bar = progressbar.ProgressBar(max_value=max_value)
         i = 0
+        logging.info("Rewriting vectors database: iteration through database began.")
         for doc in self.db.tm.find({}, batch_size=200):
             docid = doc[self.str_id]
             vector = self.img_to_vec(stringToRGB(doc[self.str_image]))
@@ -98,15 +102,18 @@ class Vectorize:
             i += 1
             if i >= max_value:
                 break
+        logging.info("Rewriting vectors database: iteration through database done. All vectors updated.")
 
     def delete_vecs(self):
         self.vectors.delete_many({})
 
     def update_vecs(self):
+        logging.info("Updating vectors database.")
         max_value = self.db.tm.count_documents({})
         bar = progressbar.ProgressBar(max_value=max_value)
         i = 0
         inserted = 0
+        logging.info("Updating vectors database: iteration through database began.")
         for doc in self.db.tm.find({}, batch_size=200):
             docid = doc[self.str_id]
             results = self.vectors.find_one({self.str_id: docid})
@@ -119,8 +126,7 @@ class Vectorize:
             i += 1
             if i >= max_value:
                 break
-        print()
-        print("{} documents inserted".format(inserted))
+        logging.info("Updating vectors database: iteration through database done. {} documents inserted".format(inserted))
 
     def save_vectors(self, name='vectors.pickle'):
         with open(name, 'wb') as f:
