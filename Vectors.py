@@ -11,6 +11,7 @@ import numpy as np
 import pickle
 import progressbar
 from pymongo import MongoClient
+import pymongo
 import logging
 
 # Take in base64 string and return a 3D RGB image (numpy array)
@@ -109,12 +110,13 @@ class Vectorize:
 
     def update_vecs(self):
         logging.info("Updating vectors database.")
-        max_value = self.db.tm.count_documents({})
+        ids_vectors = self.vectors.find().distinct('DocId')
+        max_value = self.db.tm.count_documents({"DocId": {"$nin": ids_vectors}})
         bar = progressbar.ProgressBar(max_value=max_value)
         i = 0
         inserted = 0
         logging.info("Updating vectors database: iteration through database began.")
-        for doc in self.db.tm.find({}, batch_size=200):
+        for doc in self.db.tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=200):
             docid = doc[self.str_id]
             results = self.vectors.find_one({self.str_id: docid})
             if results is None:

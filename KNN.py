@@ -1,6 +1,7 @@
 import cv2
 import pickle
 import os
+import sys
 from sklearn.neighbors import NearestNeighbors
 from Vectors import Vectorize, stringtoarray, arraytostring
 import logging
@@ -12,6 +13,7 @@ class Similarity:
     def __init__(self):
 
         self.vect = Vectorize(modelname='model.h5')
+        self.data_in_RAM = []
         logging.info('Finding similar images: Similarity class has been initialized.')
 
     def ind_similar(self, image, n_neighbors=5, test_mode=False, print_output=False):
@@ -21,7 +23,10 @@ class Similarity:
         output_dict = dict()
         counter = 0
 
-        for doc in self.vect.vectors.find({}, batch_size=200):
+        if len(self.data_in_RAM) < 1:
+            raise Exception('No files in RAM. Please, execute a function to upload the database into RAM.')
+
+        for doc in self.data_in_RAM:
             vector = doc[self.vect.str_vector]
             dist = spatial.distance.cosine(vec_to_knn, stringtoarray(vector))
             output_dict[vector] = dist
@@ -45,6 +50,12 @@ class Similarity:
             print(values)
 
         return values
+
+    def upload_data_ram(self):
+        self.data_in_RAM = []
+        # self.data_in_RAM = self.vect.vectors.find({})
+        for doc in self.vect.vectors.find({}):
+            self.data_in_RAM.append(doc)
 
 
 if __name__ == '__main__':
