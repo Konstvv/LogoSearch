@@ -118,12 +118,12 @@ class Vectorize:
         logging.info("Updating vectors database: iteration through database began.")
         for doc in self.db.tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=1000):
             docid = doc[self.str_id]
-            results = self.vectors.find_one({self.str_id: docid})
-            if results is None:
-                vector = self.img_to_vec(stringToRGB(doc[self.str_image]))
-                to_insert = {self.str_id: docid, self.str_vector: arraytostring(vector)}
-                self.vectors.insert_one(to_insert)
-                inserted += 1
+            # results = self.vectors.find_one({self.str_id: docid})
+            # if results is None:
+            vector = self.img_to_vec(stringToRGB(doc[self.str_image]))
+            to_insert = {self.str_id: docid, self.str_vector: arraytostring(vector)}
+            self.vectors.insert_one(to_insert)
+            inserted += 1
             bar.update(i)
             i += 1
             if i >= max_value:
