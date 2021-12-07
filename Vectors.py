@@ -116,7 +116,7 @@ class Vectorize:
         i = 0
         inserted = 0
         logging.info("Updating vectors database: iteration through database began.")
-        for doc in self.db.tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=200):
+        for doc in self.db.tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=1000):
             docid = doc[self.str_id]
             results = self.vectors.find_one({self.str_id: docid})
             if results is None:
