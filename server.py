@@ -34,8 +34,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         # # Writing the HTML contents with UTF-8
         # self.wfile.write(bytes(html, "utf8"))
 
-        Sim.upload_data_ram()
-        self.wfile.write(bytes(json.dumps({'GET request': 'ok', 'Data uploaded in RAM': 'ok'}), 'utf-8'))
+        self.wfile.write(bytes(json.dumps({'GET': 'request', 'received': 'ok'}), 'utf-8'))
         logging.info('GET response executed')
         return
 
