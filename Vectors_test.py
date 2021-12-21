@@ -164,3 +164,4 @@ if __name__ == "__main__":
 
     # vec.delete_vecs()
     vec.update_vecs_v2_c_sharp()
+    #ы
