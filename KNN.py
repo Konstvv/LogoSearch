@@ -3,7 +3,7 @@ import pickle
 import os
 import sys
 from sklearn.neighbors import NearestNeighbors
-from Vectors import Vectorize, stringtoarray, arraytostring
+from Vectors import Vectorize
 import logging
 from scipy import spatial
 
@@ -21,6 +21,8 @@ class Similarity:
         vec_to_knn = [self.vect.img_to_vec(image)]
 
         output_dict = dict()
+        vector2indx = dict()
+        indx = 0
         counter = 0
 
         if len(self.data_in_RAM) < 1:
@@ -28,10 +30,12 @@ class Similarity:
 
         for doc in self.data_in_RAM:
             vector = doc[self.vect.str_vector]
-            dist = spatial.distance.cosine(vec_to_knn, stringtoarray(vector))
-            output_dict[vector] = dist
+            dist = spatial.distance.cosine(vec_to_knn, vector)
+            vector2indx[indx] = vector
+            output_dict[indx] = dist
             if len(output_dict) > n_neighbors:
                 del output_dict[max(output_dict, key=output_dict.get)]
+            indx += 1
             if test_mode:
                 counter += 1
                 if counter > 5000:
@@ -41,8 +45,8 @@ class Similarity:
 
         logging.info('Finding similar images: Distances between vectors computed.')
 
-        for vector, distance in output_dict.items():
-            docid = self.vect.vectors.find_one({self.vect.str_vector: vector})[self.vect.str_id]
+        for idx, distance in output_dict.items():
+            docid = self.vect.vectors.find_one({self.vect.str_vector: vector2indx[idx]})[self.vect.str_id]
             # distance = dist[0][i]
             values.append({'DocId': str(docid), 'distance': str(distance)})
 
