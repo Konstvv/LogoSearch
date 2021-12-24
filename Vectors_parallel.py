@@ -140,7 +140,9 @@ def update_vecs(chunk, model):
 
 
 if __name__ == "__main__":
-    NUM_THREADS = 4
+    NUM_THREADS = 2
+
+    exit()
 
     client = MongoClient('localhost', 27017)
     db = client['Patents']
@@ -150,28 +152,8 @@ if __name__ == "__main__":
     print('Total # of documents: ', db.tm.count_documents({}))
     print('Inintial # of vectors: ', vectors.tm.count_documents({}))
 
-    # vec = Vectorize(modelname='model.h5')#, imgdir='database_logos_part')
-    # vec.delete_vecs()
-    # exit()
-
     models = []
     for i in range(NUM_THREADS):
         models.append(keras.models.load_model('model.h5', compile=False))
 
-    # update_partial = partial(update_vecs, model=model_nn)
-    # res = process_map(update_partial, chunks_ids)
     res = p_tqdm.p_map(update_vecs, list(chunks_ids), models)
-
-    # i = 0
-    # threads = list()
-    # for model, chunk in zip(models, chunks_ids):
-    #     print("Main    : create and start thread %d.", i)
-    #     x = threading.Thread(target=update_vecs, args=(chunk, model), daemon=True)
-    #     threads.append(x)
-    #     x.start()
-    #     i += 1
-
-    # for index, thread in enumerate(threads):
-    #     print("Main    : before joining thread %d.", index)
-    #     thread.join()
-    #     print("Main    : thread %d done", index)

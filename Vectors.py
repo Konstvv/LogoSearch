@@ -86,24 +86,24 @@ class Vectorize:
         img = preprocess_input(img)
         return self.model.predict(img).ravel()
 
-    # def all_files_to_vec(self):
-    #     logging.info("Rewriting vectors database.")
-    #     self.delete_vecs()
-    #     logging.info("Rewriting vectors database: database emptied.")
-    #     max_value = self.db.tm.count_documents({})
-    #     bar = progressbar.ProgressBar(max_value=max_value)
-    #     i = 0
-    #     logging.info("Rewriting vectors database: iteration through database began.")
-    #     for doc in self.db.tm.find({}, batch_size=200):
-    #         docid = doc[self.str_id]
-    #         vector = self.img_to_vec(stringToRGB(doc[self.str_image]))
-    #         to_insert = {self.str_id: docid, self.str_vector: arraytostring(vector)}
-    #         self.vectors.insert_one(to_insert)
-    #         bar.update(i)
-    #         i += 1
-    #         if i >= max_value:
-    #             break
-    #     logging.info("Rewriting vectors database: iteration through database done. All vectors updated.")
+    def all_files_to_vec(self):
+        logging.info("Rewriting vectors database.")
+        self.delete_vecs()
+        logging.info("Rewriting vectors database: database emptied.")
+        max_value = self.db.tm.count_documents({})
+        bar = progressbar.ProgressBar(max_value=max_value)
+        i = 0
+        logging.info("Rewriting vectors database: iteration through database began.")
+        for doc in self.db.tm.find({}, batch_size=200):
+            docid = doc[self.str_id]
+            vector = self.img_to_vec(stringToRGB(doc[self.str_image]))
+            to_insert = {self.str_id: docid, self.str_vector: arraytostring(vector)}
+            self.vectors.insert_one(to_insert)
+            bar.update(i)
+            i += 1
+            if i >= max_value:
+                break
+        logging.info("Rewriting vectors database: iteration through database done. All vectors updated.")
 
     def delete_vecs(self):
         self.vectors.delete_many({})
@@ -117,37 +117,14 @@ class Vectorize:
         inserted = 0
         logging.info("Updating vectors database: iteration through database began.")
         for doc in self.db.tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=1000):
-            docid = doc[self.str_id]
-            # results = self.vectors.find_one({self.str_id: docid})
-            # if results is None:
-            vector = self.img_to_vec(stringToRGB(doc[self.str_image]))
-            to_insert = {self.str_id: docid, self.str_vector: arraytostring(vector)}
-            self.vectors.insert_one(to_insert)
-            inserted += 1
-            bar.update(i)
-            i += 1
-            if i >= max_value:
-                break
-        logging.info("Updating vectors database: iteration through database done. {} documents inserted".format(inserted))
-
-
-    def update_vecs_v2_c_sharp(self):
-        logging.info("Updating vectors database.")
-        ids_vectors = self.vectors.find().distinct('DocId')
-        max_value = self.db.tm.count_documents({"DocId": {"$nin": ids_vectors}})
-        bar = progressbar.ProgressBar(max_value=max_value)
-        i = 0
-        inserted = 0
-        logging.info("Updating vectors database: iteration through database began.")
-        for doc in self.db.tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=1000):
-            docid = doc[self.str_id]
-            # results = self.vectors.find_one({self.str_id: docid})
-            # if results is None:
-            vector = self.img_to_vec(stringToRGB(doc[self.str_image]))
-            vector = vector.tolist()
-            to_insert = {self.str_id: docid, self.str_vector: vector}
-            self.vectors.insert_one(to_insert)
-            inserted += 1
+            if self.str_id in doc.keys() and self.str_image in doc.keys():
+                docid = doc[self.str_id]
+                # results = self.vectors.find_one({self.str_id: docid})
+                # if results is None:
+                vector = self.img_to_vec(stringToRGB(doc[self.str_image]))
+                to_insert = {self.str_id: docid, self.str_vector: arraytostring(vector)}
+                self.vectors.insert_one(to_insert)
+                inserted += 1
             bar.update(i)
             i += 1
             if i >= max_value:
@@ -162,11 +139,9 @@ class Vectorize:
 if __name__ == "__main__":
     vec = Vectorize(modelname='model.h5')#, imgdir='database_logos_part')
 
-    # vec.delete_vecs()
-    # vec.update_vecs_v2_c_sharp()
+    # print(vec.db.list_collection_names())
 
-    #check one specific vector:
-    import sys
-    elem = vec.vectors.find_one({"DocId": 52062})
-    arr = elem['ImgVector'][:100]
-    print(arr)
+    # vec.all_files_to_vec()
+    vec.update_vecs()
+
+    # vec.save_vectors('database_logos_part.pickle')
