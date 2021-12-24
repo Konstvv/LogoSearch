@@ -42,7 +42,7 @@ class Vectorize:
         try:
             self.client = MongoClient('localhost', 27017)
             self.db = self.client['Patents']
-            self.vectors = self.db['TestVector']
+            self.vectors = self.db['Vectors']
             self.str_image = 'Image'
             self.str_id = 'DocId'
             self.str_vector = 'ImgVector'
@@ -90,11 +90,11 @@ class Vectorize:
     #     logging.info("Rewriting vectors database.")
     #     self.delete_vecs()
     #     logging.info("Rewriting vectors database: database emptied.")
-    #     max_value = self.db.test_tm.count_documents({})
+    #     max_value = self.db.tm.count_documents({})
     #     bar = progressbar.ProgressBar(max_value=max_value)
     #     i = 0
     #     logging.info("Rewriting vectors database: iteration through database began.")
-    #     for doc in self.db.test_tm.find({}, batch_size=200):
+    #     for doc in self.db.tm.find({}, batch_size=200):
     #         docid = doc[self.str_id]
     #         vector = self.img_to_vec(stringToRGB(doc[self.str_image]))
     #         to_insert = {self.str_id: docid, self.str_vector: arraytostring(vector)}
@@ -111,12 +111,12 @@ class Vectorize:
     def update_vecs(self):
         logging.info("Updating vectors database.")
         ids_vectors = self.vectors.find().distinct('DocId')
-        max_value = self.db.test_tm.count_documents({"DocId": {"$nin": ids_vectors}})
+        max_value = self.db.tm.count_documents({"DocId": {"$nin": ids_vectors}})
         bar = progressbar.ProgressBar(max_value=max_value)
         i = 0
         inserted = 0
         logging.info("Updating vectors database: iteration through database began.")
-        for doc in self.db.test_tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=1000):
+        for doc in self.db.tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=1000):
             docid = doc[self.str_id]
             # results = self.vectors.find_one({self.str_id: docid})
             # if results is None:
@@ -134,12 +134,12 @@ class Vectorize:
     def update_vecs_v2_c_sharp(self):
         logging.info("Updating vectors database.")
         ids_vectors = self.vectors.find().distinct('DocId')
-        max_value = self.db.test_tm.count_documents({"DocId": {"$nin": ids_vectors}})
+        max_value = self.db.tm.count_documents({"DocId": {"$nin": ids_vectors}})
         bar = progressbar.ProgressBar(max_value=max_value)
         i = 0
         inserted = 0
         logging.info("Updating vectors database: iteration through database began.")
-        for doc in self.db.test_tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=1000):
+        for doc in self.db.tm.find({"DocId": {"$nin": ids_vectors}}, batch_size=1000):
             docid = doc[self.str_id]
             # results = self.vectors.find_one({self.str_id: docid})
             # if results is None:
@@ -164,4 +164,3 @@ if __name__ == "__main__":
 
     # vec.delete_vecs()
     vec.update_vecs_v2_c_sharp()
-    #ы
