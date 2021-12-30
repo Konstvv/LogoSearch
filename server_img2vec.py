@@ -68,7 +68,7 @@ Sim = Similarity()
 # Create an object of the above class
 handler_object = MyHttpRequestHandler
 
-PORT = 8080
+PORT = 8000
 my_server = socketserver.TCPServer(("", PORT), handler_object)
 
 logging.info('The server is ready to work.')
