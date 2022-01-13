@@ -13,15 +13,33 @@ import progressbar
 from pymongo import MongoClient
 import argparse
 import logging
+import matplotlib.pyplot as plt
 
 # Take in base64 string and return a 3D RGB image (numpy array)
 def stringToRGB(base64_string):
     im = Image.open(io.BytesIO(base64.b64decode(base64_string)))
     im = np.array(im)
-    if len(im.shape) < 3:
+
+    plt.figure()
+    plt.imshow(im)
+
+    if len(im.shape) == 3:
+        if im.shape[2] == 3:
+            pass
+        elif im.shape[2] == 4:
+            im = cv2.cvtColor(im, cv2.COLOR_RGBA2RGB)
+        else:
+            logging.error("Please use RGB (3 channels), RGBA (4 channels), or grayscale (1 channel) images.")
+    elif len(im.shape) < 3:
         im = cv2.cvtColor(im, cv2.COLOR_GRAY2RGB)
-    if len(im.shape) != 3:
-        logging.error("Please use RGB (3 channels) or grayscale (1 channel) images.")
+    else:
+        logging.error("Please use RGB (3 channels), RGBA (4 channels), or grayscale (1 channel) images.")
+    print(im.shape)
+
+    plt.figure()
+    plt.imshow(im)
+    plt.show()
+
     return im
 
 
