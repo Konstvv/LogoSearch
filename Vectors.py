@@ -19,10 +19,6 @@ import matplotlib.pyplot as plt
 def stringToRGB(base64_string):
     im = Image.open(io.BytesIO(base64.b64decode(base64_string)))
     im = np.array(im)
-
-    plt.figure()
-    plt.imshow(im)
-
     if len(im.shape) == 3:
         if im.shape[2] == 3:
             pass
@@ -34,12 +30,6 @@ def stringToRGB(base64_string):
         im = cv2.cvtColor(im, cv2.COLOR_GRAY2RGB)
     else:
         logging.error("Please use RGB (3 channels), RGBA (4 channels), or grayscale (1 channel) images.")
-    print(im.shape)
-
-    plt.figure()
-    plt.imshow(im)
-    plt.show()
-
     return im
 
 
