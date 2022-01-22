@@ -1,7 +1,7 @@
 import pandas as pd
 import base64
 totalnum = 3000000
-#test
+
 chunksize = 1000
 
 chunkcount = 0
