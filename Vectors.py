@@ -1,5 +1,3 @@
-from keras.applications import VGG19
-from keras.engine import Model
 import cv2
 import keras
 from keras.preprocessing import image
