@@ -73,7 +73,7 @@ model_text = keras.models.load_model('save_at_16.h5', compile=False)
 # Create an object of the above class
 handler_object = MyHttpRequestHandler
 
-PORT = 8000
+PORT = 8001
 my_server = socketserver.TCPServer(("", PORT), handler_object)
 
 logging.info('The server is ready to work.')
